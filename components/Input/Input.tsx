@@ -36,6 +36,9 @@ const Input = ({
             ${icon ? "!pl-10" : ""}
             border rounded-lg
             text-sm sm:text-base
+            text-gray-900
+            placeholder:text-gray-400
+            bg-white 
             transition-colors
             focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500
             ${

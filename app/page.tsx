@@ -140,6 +140,7 @@ export default function Home() {
                                 icon={Workflow}
                                 variant="primary"
                                 size="lg"
+                                className="m-auto"
                             >
                                 Create Your First Task
                             </Button>
