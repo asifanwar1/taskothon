@@ -62,7 +62,8 @@ export const dexieAuthService = {
 
     getCurrentUser: (): DexieUser | null => {
         const currentUserId = db.cloud.currentUserId;
-        if (!currentUserId) {
+
+        if (!currentUserId || currentUserId === "unauthorized") {
             return null;
         }
 
@@ -86,13 +87,20 @@ export const dexieAuthService = {
     ): (() => void) => {
         const subscription = db.cloud.currentUser.subscribe((userLogin) => {
             const userId = db.cloud.currentUserId;
-            const user = mapUserLoginToDexieUser(userId, userLogin);
+            const user =
+                userId && userId !== "unauthorized"
+                    ? mapUserLoginToDexieUser(userId, userLogin)
+                    : null;
             callback(user);
         });
 
         const currentUserId = db.cloud.currentUserId;
         const userLogin = db.cloud.currentUser?.value;
-        callback(mapUserLoginToDexieUser(currentUserId, userLogin));
+        const user =
+            currentUserId && currentUserId !== "unauthorized"
+                ? mapUserLoginToDexieUser(currentUserId, userLogin)
+                : null;
+        callback(user);
 
         return () => {
             subscription.unsubscribe();

@@ -170,16 +170,14 @@ export const useHomeContainer = (): UseHomeContainerReturn => {
     };
 
     const handleConfirmLogout = async (): Promise<void> => {
-        try {
-            await dexieAuthService.signOut();
-            tasksCache = EMPTY_TASKS_ARRAY;
-            tasksLoaded = false;
-            observableInstance = null;
-            setShowLogoutModal(false);
-            router.push("/auth/signin");
-        } catch (error) {
-            console.error("Error signing out:", error);
-        }
+        setShowLogoutModal(false);
+        void dexieAuthService.signOut();
+
+        tasksCache = EMPTY_TASKS_ARRAY;
+        tasksLoaded = false;
+        observableInstance = null;
+
+        window.location.href = "/auth/signin";
     };
 
     const handleGoToTasks = (): void => {
