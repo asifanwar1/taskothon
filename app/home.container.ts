@@ -173,6 +173,17 @@ export const useHomeContainer = (): UseHomeContainerReturn => {
         setShowLogoutModal(false);
         void dexieAuthService.signOut();
 
+        if ("serviceWorker" in navigator && "caches" in window) {
+            try {
+                const cacheNames = await caches.keys();
+                await Promise.all(
+                    cacheNames.map((cacheName) => caches.delete(cacheName))
+                );
+            } catch (error) {
+                console.error("Error clearing cache:", error);
+            }
+        }
+
         tasksCache = EMPTY_TASKS_ARRAY;
         tasksLoaded = false;
         observableInstance = null;

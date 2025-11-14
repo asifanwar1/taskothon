@@ -8,13 +8,19 @@ const urlsToCache = [
 ];
 
 const shouldCache = (url) => {
-    if (url.includes("/_next/static/")) {
+    if (url.includes("/_next/")) {
         return false;
     }
     if (url.includes("/api/")) {
         return false;
     }
     if (url.includes("/sw.js")) {
+        return false;
+    }
+    if (url.includes("/manifest.json")) {
+        return false;
+    }
+    if (url.includes("webpack") || url.includes("chunks")) {
         return false;
     }
     return true;
@@ -44,8 +50,15 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
     const url = new URL(event.request.url);
+    const requestUrl = event.request.url;
 
-    if (!shouldCache(url.pathname)) {
+    if (
+        !shouldCache(url.pathname) ||
+        requestUrl.includes("/_next/") ||
+        requestUrl.includes("webpack") ||
+        requestUrl.includes("chunks") ||
+        requestUrl.includes("/manifest.json")
+    ) {
         event.respondWith(fetch(event.request));
         return;
     }
@@ -68,7 +81,6 @@ self.addEventListener("fetch", (event) => {
         })
     );
 });
-
 self.addEventListener("push", (event) => {
     if (event.data) {
         const data = event.data.json();
