@@ -18,6 +18,10 @@ const nextConfig: NextConfig = {
                         key: "Referrer-Policy",
                         value: "strict-origin-when-cross-origin",
                     },
+                    {
+                        key: "Content-Security-Policy",
+                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.dexie.cloud https://dexie.cloud;",
+                    },
                 ],
             },
             {
@@ -30,10 +34,6 @@ const nextConfig: NextConfig = {
                     {
                         key: "Cache-Control",
                         value: "no-cache, no-store, must-revalidate",
-                    },
-                    {
-                        key: "Content-Security-Policy",
-                        value: "default-src 'self'; script-src 'self'; connect-src 'self' https://*.dexie.cloud https://dexie.cloud;",
                     },
                 ],
             },
