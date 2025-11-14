@@ -12,7 +12,7 @@ export class TaskDB extends Dexie {
             tasks: "@id, title, description, date, time, jiraLink, status, category",
         });
 
-        const databaseUrl = process.env.NEXT_PUBLIC_DEXIE_URL;
+        const databaseUrl = "https://zz8g27g95.dexie.cloud";
 
         if (!databaseUrl) {
             throw new Error(
