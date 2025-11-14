@@ -8,19 +8,14 @@
 // ];
 
 // const shouldCache = (url) => {
-//     if (url.includes("/_next/")) {
-//         return false;
-//     }
-//     if (url.includes("/api/")) {
-//         return false;
-//     }
-//     if (url.includes("/sw.js")) {
-//         return false;
-//     }
-//     if (url.includes("/manifest.json")) {
-//         return false;
-//     }
-//     if (url.includes("webpack") || url.includes("chunks")) {
+//     if (
+//         url.includes("/_next/") ||
+//         url.includes("/api/") ||
+//         url.includes("/sw.js") ||
+//         url.includes("/manifest.json") ||
+//         url.includes("webpack") ||
+//         url.includes("chunks")
+//     ) {
 //         return false;
 //     }
 //     return true;
@@ -118,14 +113,19 @@ const urlsToCache = [
 ];
 
 const shouldCache = (url) => {
-    if (
-        url.includes("/_next/") ||
-        url.includes("/api/") ||
-        url.includes("/sw.js") ||
-        url.includes("/manifest.json") ||
-        url.includes("webpack") ||
-        url.includes("chunks")
-    ) {
+    if (url.includes("/_next/")) {
+        return false;
+    }
+    if (url.includes("/api/")) {
+        return false;
+    }
+    if (url.includes("/sw.js")) {
+        return false;
+    }
+    if (url.includes("/manifest.json")) {
+        return false;
+    }
+    if (url.includes("webpack") || url.includes("chunks")) {
         return false;
     }
     return true;
@@ -135,25 +135,46 @@ const isDexieCloudRequest = (url) => {
     return url.includes("dexie.cloud");
 };
 
+const shouldIntercept = (requestUrl) => {
+    if (isDexieCloudRequest(requestUrl)) {
+        return false;
+    }
+    if (requestUrl.includes("/_next/")) {
+        return false;
+    }
+    if (requestUrl.includes("webpack")) {
+        return false;
+    }
+    if (requestUrl.includes("chunks")) {
+        return false;
+    }
+    if (requestUrl.includes("/manifest.json")) {
+        return false;
+    }
+    return true;
+};
+
 self.addEventListener("install", (event) => {
     self.skipWaiting();
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => cache.addAll(urlsToCache))
+        caches.open(CACHE_NAME).then((cache) => {
+            return cache.addAll(urlsToCache);
+        })
     );
 });
 
 self.addEventListener("activate", (event) => {
     event.waitUntil(
         Promise.all([
-            caches
-                .keys()
-                .then((cacheNames) =>
-                    Promise.all(
-                        cacheNames
-                            .filter((cacheName) => cacheName !== CACHE_NAME)
-                            .map((cacheName) => caches.delete(cacheName))
-                    )
-                ),
+            caches.keys().then((cacheNames) => {
+                return Promise.all(
+                    cacheNames.map((cacheName) => {
+                        if (cacheName !== CACHE_NAME) {
+                            return caches.delete(cacheName);
+                        }
+                    })
+                );
+            }),
             self.clients.claim(),
         ])
     );
@@ -161,17 +182,14 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
     const requestUrl = event.request.url;
+
+    if (!shouldIntercept(requestUrl)) {
+        return;
+    }
+
     const url = new URL(requestUrl);
 
-    if (
-        isDexieCloudRequest(requestUrl) ||
-        !shouldCache(url.pathname) ||
-        requestUrl.includes("/_next/") ||
-        requestUrl.includes("webpack") ||
-        requestUrl.includes("chunks") ||
-        requestUrl.includes("/manifest.json")
-    ) {
-        event.respondWith(fetch(event.request));
+    if (!shouldCache(url.pathname)) {
         return;
     }
 

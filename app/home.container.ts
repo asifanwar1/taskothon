@@ -173,7 +173,7 @@ export const useHomeContainer = (): UseHomeContainerReturn => {
         setShowLogoutModal(false);
         void dexieAuthService.signOut();
 
-        if ("serviceWorker" in navigator && "caches" in window) {
+        if ("caches" in window) {
             try {
                 const cacheNames = await caches.keys();
                 await Promise.all(
