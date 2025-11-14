@@ -1,0 +1,27 @@
+interface ConfigType {
+    LIMIT: string | undefined;
+    API_URL: string | undefined;
+    PERSIST_SECRET_KEY: string;
+    FIREBASE_API_KEY?: string;
+    FIREBASE_AUTH_DOMAIN?: string;
+    FIREBASE_PROJECT_ID?: string;
+    FIREBASE_STORAGE_BUCKET?: string;
+    FIREBASE_MESSAGING_SENDER_ID?: string;
+    FIREBASE_APP_ID?: string;
+}
+
+const Config: ConfigType = {
+    PERSIST_SECRET_KEY: "!!SP@CRK_C0D3!!",
+    LIMIT: process.env.NEXT_PUBLIC_LIMIT,
+    API_URL: process.env.NEXT_PUBLIC_API_URL,
+
+    FIREBASE_API_KEY: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    FIREBASE_AUTH_DOMAIN: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    FIREBASE_PROJECT_ID: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    FIREBASE_STORAGE_BUCKET: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    FIREBASE_MESSAGING_SENDER_ID:
+        process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    FIREBASE_APP_ID: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+};
+
+export default Config;
