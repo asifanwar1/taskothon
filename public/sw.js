@@ -7,6 +7,19 @@ const urlsToCache = [
     "/icon-512x512.png",
 ];
 
+const shouldCache = (url) => {
+    if (url.includes("/_next/static/")) {
+        return false;
+    }
+    if (url.includes("/api/")) {
+        return false;
+    }
+    if (url.includes("/sw.js")) {
+        return false;
+    }
+    return true;
+};
+
 self.addEventListener("install", (event) => {
     event.waitUntil(
         caches.open(CACHE_NAME).then((cache) => {
@@ -30,9 +43,28 @@ self.addEventListener("activate", (event) => {
 });
 
 self.addEventListener("fetch", (event) => {
+    const url = new URL(event.request.url);
+
+    if (!shouldCache(url.pathname)) {
+        event.respondWith(fetch(event.request));
+        return;
+    }
+
     event.respondWith(
         caches.match(event.request).then((response) => {
-            return response || fetch(event.request);
+            if (response) {
+                return response;
+            }
+
+            return fetch(event.request).then((response) => {
+                if (response.status === 200 && shouldCache(url.pathname)) {
+                    const responseToCache = response.clone();
+                    caches.open(CACHE_NAME).then((cache) => {
+                        cache.put(event.request, responseToCache);
+                    });
+                }
+                return response;
+            });
         })
     );
 });
