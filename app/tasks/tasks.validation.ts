@@ -34,18 +34,10 @@ export const taskFormSchema = z.object({
             { message: "Please enter a valid date" }
         ),
     hoursSpent: z
-        .string()
-        .min(1, "Hours spent is required")
-        .refine(
-            (val) => {
-                const num = parseFloat(val);
-                return !isNaN(num) && num >= 0;
-            },
-            {
-                message:
-                    "Hours spent must be a valid number greater than or equal to 0",
-            }
-        ),
+        .number()
+        .min(0, "Hours spent must be greater than or equal to 0")
+        .optional()
+        .or(z.nan()),
 });
 
 export type TaskFormSchema = z.infer<typeof taskFormSchema>;

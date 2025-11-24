@@ -9,7 +9,7 @@ export class TaskDB extends Dexie {
         super("taskothon_db", { addons: [dexieCloud] });
 
         this.version(1).stores({
-            tasks: "@id, title, description, date, time, jiraLink, status, category",
+            tasks: "@id, title, description, date, time, jiraLink, status, category, hoursSpent, whiteboardData",
         });
 
         const databaseUrl = process.env.NEXT_PUBLIC_DEXIE_URL;

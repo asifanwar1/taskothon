@@ -13,6 +13,7 @@ import {
     Edit,
     Filter,
     Calendar,
+    PenTool,
 } from "lucide-react";
 import Header from "@/components/Header/Header";
 import Modal from "@/components/Modal/Modal";
@@ -21,6 +22,7 @@ import { useTasksContainer } from "./tasks.container";
 import type { Task } from "@/lib/dexie/types";
 import logo from "@/assets/logo.svg";
 import { useAutoArchive } from "@/hooks/useAutoArchive";
+import Whiteboard from "@/components/Whiteboard/Whiteboard";
 
 const StatusIcon = ({ status }: { status: Task["status"] }) => {
     if (status === "Done") {
@@ -43,6 +45,11 @@ const TasksPage = () => {
         currentMonthDisplay,
         stats,
         formMethods,
+        whiteboardTaskId,
+        whiteboardData,
+        handleOpenWhiteboard,
+        handleCloseWhiteboard,
+        handleSaveWhiteboard,
         getFilteredMonthDays,
         setFilterStatus,
         handleAddTask,
@@ -57,6 +64,7 @@ const TasksPage = () => {
         isToday,
         onFormSubmit,
     } = useTasksContainer();
+    const whiteboardTask = tasks.find((t) => t.id === whiteboardTaskId);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -335,6 +343,17 @@ const TasksPage = () => {
                                                                 </select>
                                                                 <button
                                                                     onClick={() =>
+                                                                        handleOpenWhiteboard(
+                                                                            task
+                                                                        )
+                                                                    }
+                                                                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                                                    title="Open whiteboard"
+                                                                >
+                                                                    <PenTool className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() =>
                                                                         handleEditTask(
                                                                             task
                                                                         )
@@ -383,6 +402,29 @@ const TasksPage = () => {
                     formMethods={formMethods}
                     onSubmit={onFormSubmit}
                 />
+            </Modal>
+
+            <Modal
+                isOpen={whiteboardTaskId !== null}
+                onClose={handleCloseWhiteboard}
+                title={`Whiteboard: ${whiteboardTask?.title || "Task"}`}
+                size="full"
+                childrenContainerClass="!p-0"
+            >
+                <div
+                    style={{
+                        width: "100%",
+                        height: "calc(100vh - 96px)",
+                        maxHeight: "calc(100vh - 32px)",
+                    }}
+                >
+                    <Whiteboard
+                        initialData={whiteboardData || null}
+                        onSave={handleSaveWhiteboard}
+                        readOnly={false}
+                        className="h-full"
+                    />
+                </div>
             </Modal>
         </div>
     );

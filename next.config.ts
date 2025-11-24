@@ -20,7 +20,15 @@ const nextConfig: NextConfig = {
                     },
                     {
                         key: "Content-Security-Policy",
-                        value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://*.dexie.cloud https://dexie.cloud;",
+                        value: [
+                            "default-src 'self'",
+                            "script-src 'self' 'unsafe-eval' 'unsafe-inline'",
+                            "style-src 'self' 'unsafe-inline'",
+                            "connect-src 'self' https://*.dexie.cloud https://dexie.cloud https://cdn.tldraw.com",
+                            "img-src 'self' blob: data: https://cdn.tldraw.com",
+                            "font-src 'self' data: https://cdn.tldraw.com",
+                            "media-src 'self' blob: data:",
+                        ].join("; "),
                     },
                 ],
             },

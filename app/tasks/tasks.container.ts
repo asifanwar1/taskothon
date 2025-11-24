@@ -25,7 +25,7 @@ const initialFormData: TaskFormData = {
     jiraLink: "",
     status: TASK_STATUS.Todo,
     date: new Date().toISOString().split("T")[0],
-    hoursSpent: "",
+    hoursSpent: 0,
 };
 
 const filterByStatus = (tasks: Task[], status: TaskStatus | "all"): Task[] => {
@@ -143,6 +143,10 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
     const [selectedTask, setSelectedTask] = useState<Task | null>(null);
     const [formData, setFormData] = useState<TaskFormData>(initialFormData);
     const [tasksCache, setTasksCache] = useState<Task[]>([]);
+    const [whiteboardTaskId, setWhiteboardTaskId] = useState<string | null>(
+        null
+    );
+    const [whiteboardData, setWhiteboardData] = useState<string>("");
 
     const tasksObservable = liveQuery(async () => {
         try {
@@ -271,7 +275,7 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
             jiraLink: task.jiraLink || "",
             status: task.status,
             date: task.date,
-            hoursSpent: "",
+            hoursSpent: task.hoursSpent || 0,
         };
         setFormData(newFormData);
         setSelectedTask(task);
@@ -331,6 +335,11 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         try {
             const now = new Date();
             const time = now.toTimeString().split(" ")[0];
+            const parsedHours = data.hoursSpent ?? 0;
+            const hoursSpent =
+                Number.isNaN(parsedHours) || parsedHours < 0
+                    ? undefined
+                    : parsedHours;
 
             if (modalMode === "add") {
                 await dexieTasksService.createTask({
@@ -340,6 +349,7 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
                     status: data.status,
                     date: data.date,
                     time,
+                    hoursSpent,
                 });
                 showToast.success("Task added successfully!");
             } else if (modalMode === "edit" && selectedTask) {
@@ -349,6 +359,7 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
                     jiraLink: data.jiraLink || undefined,
                     status: data.status,
                     date: data.date,
+                    hoursSpent,
                 });
                 showToast.success("Task updated successfully!");
             }
@@ -367,14 +378,44 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
 
     const onFormSubmit = formMethods.handleSubmit(handleSubmitTask);
 
+    const handleOpenWhiteboard = (task: Task) => {
+        setWhiteboardTaskId(task.id || null);
+        setWhiteboardData(task.whiteboardData || "");
+    };
+
+    const handleCloseWhiteboard = () => {
+        setWhiteboardTaskId(null);
+        setWhiteboardData("");
+    };
+
+    const handleSaveWhiteboard = async (data: string) => {
+        if (!whiteboardTaskId) {
+            return;
+        }
+
+        setIsLoading(true);
+        try {
+            await dexieTasksService.updateTask(whiteboardTaskId, {
+                whiteboardData: data || undefined,
+            });
+            setWhiteboardData(data);
+            showToast.success("Whiteboard saved successfully!");
+        } catch (error) {
+            console.error("Error saving whiteboard:", error);
+            showToast.error("Failed to save whiteboard. Please try again.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     const handleExportTasks = () => {
-        if (filteredTasks.length === 0) {
+        if (tasks.length === 0) {
             showToast.info("No tasks to export.");
             return;
         }
 
         const filename = getMonthYearFilename(new Date());
-        exportTasksToExcel(filteredTasks, filename);
+        exportTasksToExcel(tasks, filename);
         showToast.success("Tasks exported successfully!");
     };
 
@@ -442,6 +483,11 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         tasksByDate,
         stats,
         formMethods,
+        whiteboardTaskId,
+        whiteboardData,
+        handleOpenWhiteboard,
+        handleCloseWhiteboard,
+        handleSaveWhiteboard,
         getFilteredMonthDays,
         onFormSubmit,
         setFilterStatus,

@@ -34,6 +34,8 @@ export interface Task {
     jiraLink?: string;
     status: "Todo" | "In Progress" | "Done";
     category?: string;
+    hoursSpent?: number;
+    whiteboardData?: string;
 }
 
 export type DexieUser = {

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import "tldraw/tldraw.css";
 import { ProtectedRoute } from "@/components/ProtectedRoute/ProtectedRoute";
 import { ServiceWorker } from "@/components/ServiceWorker/ServiceWorker";
 

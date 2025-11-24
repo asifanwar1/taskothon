@@ -11,7 +11,7 @@ export type TaskFormData = {
     jiraLink: string;
     status: TaskStatus;
     date: string;
-    hoursSpent: string;
+    hoursSpent?: number;
 };
 
 export type UseTasksContainerReturn = {
@@ -34,6 +34,11 @@ export type UseTasksContainerReturn = {
         done: number;
         today: number;
     };
+    whiteboardTaskId: string | null;
+    whiteboardData: string;
+    handleOpenWhiteboard: (task: Task) => void;
+    handleCloseWhiteboard: () => void;
+    handleSaveWhiteboard: (data: string) => Promise<void>;
     setFilterStatus: (status: TaskStatus | "all" | "today") => void;
     getFilteredMonthDays: () => Date[];
     setFilterDateRange: (range: DateRange) => void;

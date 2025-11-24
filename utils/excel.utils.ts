@@ -8,8 +8,8 @@ export const exportTasksToExcel = (tasks: Task[], filename: string): void => {
         Status: task.status,
         Date: task.date,
         Time: task.time,
+        "Hours Spent": task.hoursSpent?.toString() || "",
         "Jira Link": task.jiraLink || "",
-        Category: task.category || "",
     }));
 
     const worksheet = XLSX.utils.json_to_sheet(worksheetData);
