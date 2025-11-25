@@ -37,19 +37,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
                 `Date: ${t.date} ${t.time ?? ""}`,
                 t.hoursSpent !== undefined ? `Hours: ${t.hoursSpent}` : "",
             ].filter(Boolean);
-            return `- ${parts.join(" | ")}`;
+            return parts.join(" | ");
         })
         .join("\n");
 
     const prompt = [
-        `Generate a concise ${range} engineering summary in plain text (no markdown bullets).`,
-        "Structure the response in four short sections with labels:",
-        "1) Accomplishments – what was completed, grouped by themes.",
-        "2) Notable tasks – highlight the most important items.",
-        "3) Risks / blockers – mention any issues or dependencies.",
-        "4) Next focus – suggested focus areas for the next period.",
+        `Generate a concise ${range} engineering summary as plain text.`,
+        "Do NOT use any markdown formatting: no *, -, #, numbered lists, or **bold**.",
+        "Write four short sections with labels exactly like this:",
+        "Accomplishments:",
+        "Notable tasks:",
+        "Risks / blockers:",
+        "Next focus:",
         "",
-        "Use normal sentences, not bullet characters.",
+        "Use normal sentences and paragraphs only.",
         "",
         "Tasks:",
         tasksText || "(no tasks)",

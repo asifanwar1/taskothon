@@ -507,12 +507,34 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         range: "week" | "month"
     ): Promise<string | null> => {
         try {
+            let tasksForRange = tasks;
+
+            if (range === "week") {
+                const now = new Date();
+                const cutoff = new Date();
+                cutoff.setDate(now.getDate() - 7);
+
+                tasksForRange = tasks.filter((task) => {
+                    const iso = `${task.date}T${task.time ?? "00:00:00"}`;
+                    const taskDate = new Date(iso);
+                    if (Number.isNaN(taskDate.getTime())) {
+                        return false;
+                    }
+                    return taskDate >= cutoff;
+                });
+
+                if (tasksForRange.length === 0) {
+                    showToast.info("No tasks in the last 7 days.");
+                    return null;
+                }
+            }
+
             const res = await fetch("/api/ai/summary", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     range,
-                    tasks: tasks.map(mapTaskToAiInput),
+                    tasks: tasksForRange.map(mapTaskToAiInput),
                 }),
             });
 
