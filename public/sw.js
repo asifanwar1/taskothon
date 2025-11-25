@@ -67,6 +67,10 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
     const requestUrl = event.request.url;
 
+    if (event.request.mode === "navigate") {
+        return;
+    }
+
     if (!shouldIntercept(requestUrl)) {
         return;
     }
