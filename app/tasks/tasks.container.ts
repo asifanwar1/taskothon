@@ -18,6 +18,11 @@ import { taskFormSchema, type TaskFormSchema } from "./tasks.validation";
 import { showToast } from "@/lib/toast";
 import { formatDate } from "@/utils/date.utils";
 import { exportTasksToExcel, getMonthYearFilename } from "@/utils/excel.utils";
+import {
+    mapTaskToAiInput,
+    SummaryResponseSchema,
+    TaskStandupResponseSchema,
+} from "@/lib/ai/standup.types";
 
 const initialFormData: TaskFormData = {
     title: "",
@@ -147,6 +152,10 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         null
     );
     const [whiteboardData, setWhiteboardData] = useState<string>("");
+    const [isAiModalOpen, setIsAiModalOpen] = useState(false);
+    const [aiModalTitle, setAiModalTitle] = useState<string>("");
+    const [aiModalContent, setAiModalContent] = useState<string>("");
+    const [isAiLoading, setIsAiLoading] = useState(false);
 
     const tasksObservable = liveQuery(async () => {
         try {
@@ -175,6 +184,9 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         () => tasksCache,
         () => []
     );
+
+    const whiteboardTask =
+        tasks.find((task) => task.id === whiteboardTaskId) ?? null;
 
     const formMethods = useForm<TaskFormSchema>({
         resolver: zodResolver(taskFormSchema),
@@ -469,6 +481,89 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         ];
     };
 
+    const generateTaskStandup = async (task: Task): Promise<string | null> => {
+        try {
+            const res = await fetch("/api/ai/task-standup", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ task: mapTaskToAiInput(task) }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Request failed with status ${res.status}`);
+            }
+
+            const json = (await res.json()) as unknown;
+            const parsed = TaskStandupResponseSchema.parse(json);
+            return parsed.standup;
+        } catch (error) {
+            console.error("Error generating task standup:", error);
+            showToast.error("Failed to generate standup.");
+            return null;
+        }
+    };
+
+    const generatePeriodSummary = async (
+        range: "week" | "month"
+    ): Promise<string | null> => {
+        try {
+            const res = await fetch("/api/ai/summary", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    range,
+                    tasks: tasks.map(mapTaskToAiInput),
+                }),
+            });
+
+            if (!res.ok) {
+                throw new Error(`Request failed with status ${res.status}`);
+            }
+
+            const json = (await res.json()) as unknown;
+            const parsed = SummaryResponseSchema.parse(json);
+            return parsed.summary;
+        } catch (error) {
+            console.error("Error generating summary:", error);
+            showToast.error("Failed to generate summary.");
+            return null;
+        }
+    };
+
+    const handleGenerateTaskStandupClick = async (
+        task: Task
+    ): Promise<void> => {
+        setIsAiModalOpen(true);
+        setIsAiLoading(true);
+        setAiModalTitle(`AI Standup: ${task.title}`);
+        setAiModalContent("");
+
+        const result = await generateTaskStandup(task);
+        setAiModalContent(result ?? "No standup generated.");
+        setIsAiLoading(false);
+    };
+
+    const handleGenerateSummaryClick = async (
+        range: "week" | "month"
+    ): Promise<void> => {
+        setIsAiModalOpen(true);
+        setIsAiLoading(true);
+        setAiModalTitle(
+            range === "week" ? "Weekly AI Summary" : "Monthly AI Summary"
+        );
+        setAiModalContent("");
+
+        const result = await generatePeriodSummary(range);
+        setAiModalContent(result ?? "No summary generated.");
+        setIsAiLoading(false);
+    };
+
+    const handleCloseAiModal = (): void => {
+        setIsAiModalOpen(false);
+        setAiModalTitle("");
+        setAiModalContent("");
+    };
+
     return {
         tasks,
         filteredTasks,
@@ -485,6 +580,14 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         formMethods,
         whiteboardTaskId,
         whiteboardData,
+        whiteboardTask,
+        isAiModalOpen,
+        aiModalTitle,
+        aiModalContent,
+        isAiLoading,
+        handleGenerateTaskStandupClick,
+        handleGenerateSummaryClick,
+        handleCloseAiModal,
         handleOpenWhiteboard,
         handleCloseWhiteboard,
         handleSaveWhiteboard,
@@ -505,5 +608,7 @@ export const useTasksContainer = (): UseTasksContainerReturn => {
         getTasksPerDayData,
         getStatusData,
         getJiraStatsData,
+        generateTaskStandup,
+        generatePeriodSummary,
     };
 };

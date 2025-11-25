@@ -81,15 +81,15 @@ const TaskForm = ({
                     </label>
                     <input
                         type="number"
-                        {...register("hoursSpent")}
+                        {...register("hoursSpent", { valueAsNumber: true })}
                         className={`w-full px-3 sm:px-4 py-2.5 border rounded-lg text-sm sm:text-base transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white ${
                             errors.hoursSpent
                                 ? "border-red-500 focus:ring-red-500 focus:border-red-500"
                                 : "border-gray-300"
                         }`}
                         placeholder="0.0"
-                        min="0"
-                        step="0.5"
+                        min={0}
+                        step={0.5}
                     />
                     {errors.hoursSpent && (
                         <p className="mt-1 text-sm text-red-600">

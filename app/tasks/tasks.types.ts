@@ -36,6 +36,14 @@ export type UseTasksContainerReturn = {
     };
     whiteboardTaskId: string | null;
     whiteboardData: string;
+    whiteboardTask: Task | null;
+    isAiModalOpen: boolean;
+    aiModalTitle: string;
+    aiModalContent: string;
+    isAiLoading: boolean;
+    handleGenerateTaskStandupClick: (task: Task) => Promise<void>;
+    handleGenerateSummaryClick: (range: "week" | "month") => Promise<void>;
+    handleCloseAiModal: () => void;
     handleOpenWhiteboard: (task: Task) => void;
     handleCloseWhiteboard: () => void;
     handleSaveWhiteboard: (data: string) => Promise<void>;
@@ -56,6 +64,8 @@ export type UseTasksContainerReturn = {
     getStatusData: () => Array<{ name: string; value: number }>;
     getJiraStatsData: () => Array<{ name: string; value: number }>;
     onFormSubmit: (e?: React.BaseSyntheticEvent) => Promise<void>;
+    generateTaskStandup: (task: Task) => Promise<string | null>;
+    generatePeriodSummary: (range: "week" | "month") => Promise<string | null>;
 };
 
 export type TaskFormProps = {

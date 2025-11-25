@@ -14,6 +14,7 @@ import {
     Filter,
     Calendar,
     PenTool,
+    Sparkles,
 } from "lucide-react";
 import Header from "@/components/Header/Header";
 import Modal from "@/components/Modal/Modal";
@@ -47,6 +48,14 @@ const TasksPage = () => {
         formMethods,
         whiteboardTaskId,
         whiteboardData,
+        whiteboardTask,
+        isAiModalOpen,
+        aiModalTitle,
+        aiModalContent,
+        isAiLoading,
+        handleCloseAiModal,
+        handleGenerateTaskStandupClick,
+        handleGenerateSummaryClick,
         handleOpenWhiteboard,
         handleCloseWhiteboard,
         handleSaveWhiteboard,
@@ -63,8 +72,9 @@ const TasksPage = () => {
         formatDate,
         isToday,
         onFormSubmit,
+        generateTaskStandup,
+        generatePeriodSummary,
     } = useTasksContainer();
-    const whiteboardTask = tasks.find((t) => t.id === whiteboardTaskId);
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
@@ -171,6 +181,26 @@ const TasksPage = () => {
                                 {currentMonthDisplay}
                             </span>
                         </div>
+                    </div>
+                    <div className="mt-4 flex flex-wrap gap-2 ml-auto">
+                        <div className="flex items-center justify-center gap-3">
+                            <Sparkles className="w-5 h-5 text-blue-600" />
+                            <h3 className="text-lg font-semibold text-gray-900">
+                                AI Summary
+                            </h3>
+                        </div>
+                        <button
+                            onClick={() => handleGenerateSummaryClick("week")}
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-indigo-600 text-white hover:bg-indigo-700 transition cursor-pointer"
+                        >
+                            Weekly Summary
+                        </button>
+                        <button
+                            onClick={() => handleGenerateSummaryClick("month")}
+                            className="inline-flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium bg-violet-600 text-white hover:bg-violet-700 transition cursor-pointer"
+                        >
+                            Monthly Summary
+                        </button>
                     </div>
                 </div>
 
@@ -328,7 +358,7 @@ const TasksPage = () => {
                                                                                 .value as Task["status"]
                                                                         )
                                                                     }
-                                                                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white"
+                                                                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none bg-white cursor-pointer"
                                                                 >
                                                                     <option value="Todo">
                                                                         To Do
@@ -347,7 +377,7 @@ const TasksPage = () => {
                                                                             task
                                                                         )
                                                                     }
-                                                                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition"
+                                                                    className="p-2 text-purple-600 hover:bg-purple-50 rounded-lg transition cursor-pointer"
                                                                     title="Open whiteboard"
                                                                 >
                                                                     <PenTool className="w-4 h-4" />
@@ -358,7 +388,7 @@ const TasksPage = () => {
                                                                             task
                                                                         )
                                                                     }
-                                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition"
+                                                                    className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition cursor-pointer"
                                                                     title="Edit task"
                                                                 >
                                                                     <Edit className="w-4 h-4" />
@@ -370,10 +400,21 @@ const TasksPage = () => {
                                                                                 ""
                                                                         )
                                                                     }
-                                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition"
+                                                                    className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer"
                                                                     title="Delete task"
                                                                 >
                                                                     <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                                <button
+                                                                    onClick={() =>
+                                                                        handleGenerateTaskStandupClick(
+                                                                            task
+                                                                        )
+                                                                    }
+                                                                    className="p-2 text-indigo-600 hover:bg-indigo-50 rounded-lg transition cursor-pointer"
+                                                                    title="AI standup"
+                                                                >
+                                                                    <Sparkles className="w-4 h-4" />
                                                                 </button>
                                                             </div>
                                                         </div>
@@ -424,6 +465,23 @@ const TasksPage = () => {
                         readOnly={false}
                         className="h-full"
                     />
+                </div>
+            </Modal>
+
+            <Modal
+                isOpen={isAiModalOpen}
+                onClose={handleCloseAiModal}
+                title={aiModalTitle || "AI Summary"}
+                size="md"
+            >
+                <div className="min-h-[120px]">
+                    {isAiLoading ? (
+                        <p className="text-gray-600">Generating with AI...</p>
+                    ) : (
+                        <pre className="whitespace-pre-wrap text-sm text-gray-800">
+                            {aiModalContent}
+                        </pre>
+                    )}
                 </div>
             </Modal>
         </div>
