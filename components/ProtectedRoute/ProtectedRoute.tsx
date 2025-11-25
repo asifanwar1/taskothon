@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname, useRouter } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { APP_ROUTES } from "@/constants/Routes";
 
@@ -15,7 +15,6 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
     const { isAuthenticated, isLoading, isInitialized } = useAuth();
     const pathname = usePathname();
     const router = useRouter();
-    const hasRedirectedRef = useRef(false);
 
     const isPublicRoute = PUBLIC_ROUTES.some((route) =>
         pathname.startsWith(route)
@@ -25,23 +24,17 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         if (isLoading || !isInitialized) {
             return;
         }
-
-        hasRedirectedRef.current = false;
-
-        if (isAuthenticated && isPublicRoute) {
-            if (pathname !== APP_ROUTES.HOME && !hasRedirectedRef.current) {
-                hasRedirectedRef.current = true;
-                router.replace(APP_ROUTES.HOME);
-            }
+        if (
+            !isAuthenticated &&
+            !isPublicRoute &&
+            pathname !== APP_ROUTES.SIGNIN
+        ) {
+            router.replace(APP_ROUTES.SIGNIN);
             return;
         }
 
-        if (!isAuthenticated && !isPublicRoute) {
-            if (pathname !== APP_ROUTES.SIGNIN && !hasRedirectedRef.current) {
-                hasRedirectedRef.current = true;
-                router.replace(APP_ROUTES.SIGNIN);
-            }
-            return;
+        if (isAuthenticated && isPublicRoute && pathname !== APP_ROUTES.HOME) {
+            router.replace(APP_ROUTES.HOME);
         }
     }, [
         isAuthenticated,
@@ -60,20 +53,12 @@ export const ProtectedRoute = ({ children }: ProtectedRouteProps) => {
         );
     }
 
-    if (isAuthenticated && isPublicRoute && pathname !== APP_ROUTES.HOME) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-gray-600">Redirecting...</div>
-            </div>
-        );
+    if (!isAuthenticated && !isPublicRoute && pathname !== APP_ROUTES.SIGNIN) {
+        return null;
     }
 
-    if (!isAuthenticated && !isPublicRoute && pathname !== APP_ROUTES.SIGNIN) {
-        return (
-            <div className="flex items-center justify-center min-h-screen">
-                <div className="text-gray-600">Redirecting to sign in...</div>
-            </div>
-        );
+    if (isAuthenticated && isPublicRoute && pathname !== APP_ROUTES.HOME) {
+        return null;
     }
 
     return <>{children}</>;
